@@ -1,4 +1,4 @@
-package net.ddns.logick.textures;
+package net.ddns.logick.render.textures;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;

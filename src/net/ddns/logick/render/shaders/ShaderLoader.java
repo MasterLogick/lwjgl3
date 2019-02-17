@@ -1,7 +1,6 @@
-package net.ddns.logick.shaders;
+package net.ddns.logick.render.shaders;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -15,6 +14,7 @@ public class ShaderLoader {
         while ((tmp = bf.readLine()) != null) {
             shader += tmp + "\n";
         }
+        bf.close();
         return linkShader(shader, shaderType);
     }
 

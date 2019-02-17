@@ -1,8 +1,6 @@
-package net.ddns.logick.engene;
+package net.ddns.logick.windows;
 
-import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
@@ -28,32 +26,43 @@ public class GLFWwindow {
         }
     }
 
-    public long getID() {
-        return id;
-    }
-    public void setCurrient(){
+    //    public long getID() {
+//        return id;
+//    }
+    public void setCurrient() {
         glfwMakeContextCurrent(id);
     }
-    public void setVSync(int val){
+
+    public void setVSync(int val) {
         glfwSwapInterval(val);
     }
-    public void showWindow(){
+
+    public void showWindow() {
         glfwShowWindow(id);
     }
-    public void swapBuffers(){
+
+    public void swapBuffers() {
         glfwSwapBuffers(id);
     }
-    public boolean shouldClose(){
+
+    public boolean isWindowShouldClose() {
         return glfwWindowShouldClose(id);
     }
-    public void freeCallbacks(){
+
+    public void windowShoulClose() {
+        glfwSetWindowShouldClose(id, true);
+    }
+
+    public void freeCallbacks() {
         glfwFreeCallbacks(id);
     }
-    public void destroy(){
+
+    public void destroy() {
         freeCallbacks();
         glfwDestroyWindow(id);
     }
-    public void setKeyCallbacks(GLFWKeyCallbackI glfwKeyCallbackI){
+
+    public void setKeyCallbacks(GLFWKeyCallbackI glfwKeyCallbackI) {
         glfwSetKeyCallback(id, glfwKeyCallbackI);
     }
 }

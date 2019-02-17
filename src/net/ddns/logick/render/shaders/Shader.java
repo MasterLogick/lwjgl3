@@ -1,4 +1,6 @@
-package net.ddns.logick.shaders;
+package net.ddns.logick.render.shaders;
+
+import com.hackoeur.jglm.Mat4;
 
 import java.nio.FloatBuffer;
 
@@ -17,6 +19,22 @@ public class Shader {
 
     public void destroy() {
         glDeleteProgram(programID);
+    }
+
+    public void setModelMatrix(Mat4 modelMatrix) {
+        int loc = glGetUniformLocation(programID, "modelMatrix");
+        glUniformMatrix4fv(loc, false, modelMatrix.getBuffer());
+    }
+
+    public void setViewMatrix(Mat4 viewMatrix) {
+        int loc = glGetUniformLocation(programID, "viewMatrix");
+        glUniformMatrix4fv(loc, false, viewMatrix.getBuffer());
+    }
+
+    public void setProjectionMatrix(Mat4 projectionMatrix) {
+        int loc = glGetUniformLocation(programID, "projectionMatrix");
+        System.out.println(loc+"\n"+projectionMatrix.toString());
+        glUniformMatrix4fv(loc, false, projectionMatrix.getBuffer());
     }
 
     public void setInt(String name, int val) {
@@ -49,10 +67,16 @@ public class Shader {
         glUniform4fv(loc, fb);
     }
 
+    public void setMat4f(String name, boolean transpose, Mat4 matrix) {
+        int loc = glGetUniformLocation(programID, name);
+        glUniformMatrix4fv(loc, transpose, matrix.getBuffer());
+    }
+
     public void setMat4f(String name, boolean transpose, FloatBuffer fb) {
         int loc = glGetUniformLocation(programID, name);
         glUniformMatrix4fv(loc, transpose, fb);
     }
+
     public void setMat4f(String name, boolean transpose, float[] fb) {
         int loc = glGetUniformLocation(programID, name);
         glUniformMatrix4fv(loc, transpose, fb);

@@ -1,5 +1,6 @@
 package net.ddns.logick.input;
 
+import net.ddns.logick.windows.GLFWwindow;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -20,9 +21,10 @@ public class Input implements GLFWKeyCallbackI {
         else
             keys[key] = true;
     }
-    public void processInput(){
-        if(keys[GLFW_KEY_ESCAPE]){
-            glfwWindowShouldClose(glfwGetCurrentContext());
+
+    public void processInput(GLFWwindow window) {
+        if (keys[GLFW_KEY_ESCAPE]) {
+            window.windowShoulClose();
         }
     }
 }

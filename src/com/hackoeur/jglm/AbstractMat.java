@@ -14,9 +14,8 @@
  */
 package com.hackoeur.jglm;
 
-import com.hackoeur.jglm.buffer.BufferAllocator;
-import com.hackoeur.jglm.buffer.BufferAllocatorFactory;
 import com.hackoeur.jglm.support.Compare;
+import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 
@@ -24,7 +23,6 @@ import java.nio.FloatBuffer;
  * @author James Royalty
  */
 abstract class AbstractMat implements Mat {
-	private static final BufferAllocator BUFFER_ALLOCATOR = BufferAllocatorFactory.getInstance();
 	
 	@Override
 	public boolean equalsWithEpsilon(final Mat obj) {
@@ -32,6 +30,6 @@ abstract class AbstractMat implements Mat {
 	}
 	
 	protected FloatBuffer allocateFloatBuffer() {
-		return BUFFER_ALLOCATOR.allocateFloatBuffer( getNumRows() * getNumColumns() );
+		return BufferUtils.createFloatBuffer( getNumRows() * getNumColumns() );
 	}
 }

@@ -60,10 +60,9 @@ public class Main {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //            oldShader.use();
             newShader.use();
-//            shader.setVec3f("shift",new float[]{0,1,0});
-            newShader.setProjectionMatrix(/*Camera.projectionMatrix*/Mat4.MAT4_IDENTITY);
-//            newShader.setViewMatrix(/*Camera.viewMatrix*/Mat4.MAT4_IDENTITY);
-//            newShader.setModelMatrix(Mat4.MAT4_IDENTITY);
+            newShader.setProjectionMatrix(Camera.projectionMatrix);
+            newShader.setViewMatrix(Camera.viewMatrix);
+            newShader.setModelMatrix(Mat4.MAT4_IDENTITY);
             texture.use();
             glBindVertexArray(vao);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -84,10 +83,10 @@ public class Main {
 
     public static int initVao() {
         float[] vertices = {
-                0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
-                0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-                -0.5f, 0.5f, 0.0f, 0.0f, 1.0f
+                0.5f, 0.5f,  -1.0f, 1.0f, 1.0f,
+                0.5f, -0.5f, -1.0f, 1.0f, 0.0f,
+                -0.5f, -0.5f,-1.0f, 0.0f, 0.0f,
+                -0.5f, 0.5f, -1.0f, 0.0f, 1.0f
         };
         int[] indices = {
                 0, 1, 3,

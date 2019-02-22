@@ -1,5 +1,6 @@
 package net.ddns.logick.render;
 
+import Tests.Main;
 import com.hackoeur.jglm.Mat4;
 import com.hackoeur.jglm.Matrices;
 import com.hackoeur.jglm.Vec3;
@@ -10,18 +11,20 @@ public class Camera {
     public static Vec3 POSITION = new Vec3();
     public static Vec3 EYE = new Vec3(0, 0, -1);
     public static Vec3 UP = new Vec3(0, 1, 0);
+    public static double PITCH = -90d;
+    public static double YAW = 0d;
     private boolean isVectorsChanged = false;
     private Vec3 position = new Vec3();
     private Vec3 eye = new Vec3(0, 0, -1);
     private Vec3 up = new Vec3(0, 1, 0);
     public Mat4 viewMatrix;
     public Mat4 projectionMatrix;
-    private float speed = 0.5f;
-    private double senetivity = 1d;
-    private double prevXpos = 0;
-    private double prevYpos = 0;
-    private double yaw = 0;
-    private double pitch = 0;
+    private float speed = 0.15f;
+    private double senetivity = 0.25;
+    private double prevXpos = Main.SCR_WIDTH / 2;
+    private double prevYpos = Main.SCR_HEIGHT / 2;
+    private double yaw = YAW;
+    private double pitch = PITCH;
 
     public static Camera init(float fov, float aspect, float nearBorder, float farBorder) {
         Mat4 projectionMatrix = Matrices.perspective(fov, aspect, nearBorder, farBorder);
@@ -38,7 +41,8 @@ public class Camera {
         if (isVectorsChanged) {
             Logger.getGlobal().info("update");
             isVectorsChanged = false;
-            viewMatrix = Matrices.lookAt(position, position.add(eye), up);
+//            up = position.add(UP);
+            viewMatrix = Matrices.lookAt(position, eye, up);
         }
     }
 
@@ -46,33 +50,65 @@ public class Camera {
         isVectorsChanged = true;
         double deltaX = xpos - prevXpos;
         double deltaY = ypos - prevYpos;
+        Logger.getGlobal().info(yaw + " " + pitch);
         prevXpos = xpos;
         prevYpos = ypos;
-
+        yaw -= deltaX * senetivity;
+        pitch -= deltaY * senetivity;
+        if (pitch > 0f)
+            pitch = 1f;
+        if (pitch < -180.0f)
+            pitch = -179f;
+        double radYaw = Math.toRadians(yaw);
+        double radPitch = Math.toRadians(pitch);
+        eye = new Vec3((float) (Math.sin(radYaw) * Math.sin(radPitch)), (float) (Math.cos(radPitch)),
+                (float) (Math.cos(radYaw) * Math.sin(radPitch))).getUnitVector();
     }
 
     public void moveForward() {
         isVectorsChanged = true;
-        position = position.add(eye.horisontal().multiply(speed));
+        position = position.add(eye.horisontal().getUnitVector().multiply(speed));
     }
 
     public void moveBack() {
         isVectorsChanged = true;
-        position = position.add(eye.horisontal().getNegated().multiply(speed));
+        position = position.subtract(eye.horisontal().getUnitVector().multiply(speed));
     }
 
     public void moveLeft() {
         isVectorsChanged = true;
-        position = position.add(eye.cross(up).getUnitVector().horisontal().getNegated());
+        position = position.subtract(eye.cross(up).getUnitVector().horisontal().multiply(speed));
     }
 
     public void moveRight() {
         isVectorsChanged = true;
-        position = position.add(eye.cross(up).getUnitVector().horisontal());
+        position = position.add(eye.cross(up).getUnitVector().horisontal().multiply(speed));
     }
 
-    public void serPos(Vec3 new_pos) {
+    public void setPos(Vec3 new_pos) {
         isVectorsChanged = true;
         position = new_pos;
+    }
+
+    public void moveUp() {
+        isVectorsChanged = true;
+        position = position.add(UP.multiply(speed));
+    }
+
+    public void moveDown() {
+        isVectorsChanged = true;
+        position = position.subtract(UP.multiply(speed));
+    }
+
+    public void restoreDefaultPos() {
+        position = POSITION;
+        eye = EYE;
+        up = UP;
+        pitch = PITCH;
+        yaw = YAW;
+        Main.window.setMousePos(Main.SCR_WIDTH / 2, Main.SCR_HEIGHT / 2);
+        prevXpos = Main.SCR_WIDTH / 2;
+        prevYpos = Main.SCR_HEIGHT / 2;
+        isVectorsChanged = true;
     }
 }

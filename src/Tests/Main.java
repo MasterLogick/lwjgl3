@@ -25,19 +25,21 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Main {
-    private static int SCR_WIDTH = 800;
-    private static int SCR_HEIGHT = 600;
-
+    public static int SCR_WIDTH = 800;
+    public static int SCR_HEIGHT = 600;
+    public static GLFWwindow window;
     public static void main(String[] args) {
         initGLFW();
         Camera cam = Camera.init(45f, ((float) SCR_WIDTH) / ((float) SCR_HEIGHT), 0.1f, 100f);
         Input input = new Input(cam);
-        GLFWwindow window = new GLFWwindow(SCR_WIDTH, SCR_HEIGHT, "Test");
+        window = new GLFWwindow(SCR_WIDTH, SCR_HEIGHT, "Test");
         window.setCurrient();
         window.setVSync(1);
         window.showWindow();
-        window.setKeyCallbacks(input);
+        window.grabMouse();
+        window.setMousePos(SCR_WIDTH / 2, SCR_HEIGHT / 2);
         window.setMouseCallbacks(input.cursorPosCallback);
+        window.setKeyCallbacks(input);
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
         Texture texture = new Texture("res/textures/brick-texture-png-23887.png");
@@ -51,6 +53,7 @@ public class Main {
         }
 
         int vao = initVao();
+        int vao1 = initVAO1();
         glClearColor(0.11f, 0.11f, 0.11f, 0.0f);
         Logger.getGlobal().info("initiated");
         while (!window.isWindowShouldClose()) {
@@ -74,6 +77,33 @@ public class Main {
         Logger.getGlobal().info("exit");
     }
 
+    private static int initVAO1() {
+        float[] vertices = {
+                0.5f, 0.5f, -1.0f, 1.0f, 1.0f,
+                0.5f, -0.5f, -1.0f, 1.0f, 0.0f,
+                -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+                -0.5f, 0.5f, -1.0f, 0.0f, 1.0f
+        };
+        int[] indices = {
+                0, 1, 2
+        };
+        int vao = glGenVertexArrays();
+        glBindVertexArray(vao);
+        int vbo = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+        int ibo = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        return vao;
+    }
+
     public static void initGLFW() {
         GLFWErrorCallback.createPrint(System.err).set();
         if (!glfwInit())
@@ -82,9 +112,9 @@ public class Main {
 
     public static int initVao() {
         float[] vertices = {
-                0.5f, 0.5f,  -1.0f, 1.0f, 1.0f,
+                0.5f, 0.5f, -1.0f, 1.0f, 1.0f,
                 0.5f, -0.5f, -1.0f, 1.0f, 0.0f,
-                -0.5f, -0.5f,-1.0f, 0.0f, 0.0f,
+                -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
                 -0.5f, 0.5f, -1.0f, 0.0f, 1.0f
         };
         int[] indices = {

@@ -71,4 +71,16 @@ public class GLFWwindow {
     public void setMouseCallbacks(GLFWCursorPosCallbackI cdfn) {
         glfwSetCursorPosCallback(id, cdfn);
     }
+
+    public void grabMouse() {
+        glfwSetInputMode(id, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+
+    public void ungrabMouse() {
+        glfwSetInputMode(id, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+
+    public void setMousePos(double xpos, double ypos) {
+        glfwSetCursorPos(id, xpos, ypos);
+    }
 }

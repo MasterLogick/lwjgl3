@@ -83,22 +83,21 @@ public final class Matrices {
      * Defines a viewing transformation.  This method is analogous to the now
      * deprecated {@code gluLookAt} method.
      *
-     * @param eye    POSITION of the EYE point
-     * @param center POSITION of the reference point
+     * @param pos    POSITION of the EYE point
+     * @param eye POSITION of the reference point
      * @param up     direction of the UP vector
      * @return
      */
-    public static final Mat4 lookAt(final Vec3 eye, final Vec3 center, final Vec3 up) {
-        final Vec3 f = center.subtract(eye).getUnitVector();
-        Vec3 u = up.getUnitVector();
-        final Vec3 s = f.cross(u).getUnitVector();
+    public static final Mat4 lookAt(final Vec3 pos, final Vec3 eye, final Vec3 up) {
+        Vec3 f = eye.getUnitVector();
+        Vec3 u = up;
+        Vec3 s = f.cross(u).getUnitVector();
         u = s.cross(f);
-
         return new Mat4(
                 s.x, u.x, -f.x, 0f,
                 s.y, u.y, -f.y, 0f,
                 s.z, u.z, -f.z, 0f,
-                -s.dot(eye), -u.dot(eye), f.dot(eye), 1f
+                -s.dot(pos), -u.dot(pos), f.dot(pos), 1f
         );
     }
 

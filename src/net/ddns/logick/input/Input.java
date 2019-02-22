@@ -4,7 +4,6 @@ import com.hackoeur.jglm.Vec3;
 import net.ddns.logick.render.Camera;
 import net.ddns.logick.windows.GLFWwindow;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
-import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -39,7 +38,7 @@ public class Input implements GLFWKeyCallbackI {
             window.windowShoulClose();
         }
         if (keys[GLFW_KEY_C]) {
-            camera.serPos(new Vec3());
+            camera.restoreDefaultPos();
         }
         if (keys[GLFW_KEY_W]) {
             camera.moveForward();
@@ -52,6 +51,12 @@ public class Input implements GLFWKeyCallbackI {
         }
         if (keys[GLFW_KEY_D]) {
             camera.moveRight();
+        }
+        if (keys[GLFW_KEY_SPACE]) {
+            camera.moveUp();
+        }
+        if (keys[GLFW_KEY_LEFT_SHIFT]) {
+            camera.moveDown();
         }
         camera.update();
     }

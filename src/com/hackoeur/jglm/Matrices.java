@@ -83,9 +83,9 @@ public final class Matrices {
      * Defines a viewing transformation.  This method is analogous to the now
      * deprecated {@code gluLookAt} method.
      *
-     * @param eye    position of the eye point
-     * @param center position of the reference point
-     * @param up     direction of the up vector
+     * @param eye    POSITION of the EYE point
+     * @param center POSITION of the reference point
+     * @param up     direction of the UP vector
      * @return
      */
     public static final Mat4 lookAt(final Vec3 eye, final Vec3 center, final Vec3 up) {

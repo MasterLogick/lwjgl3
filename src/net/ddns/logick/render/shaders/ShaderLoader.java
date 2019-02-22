@@ -3,6 +3,7 @@ package net.ddns.logick.render.shaders;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import static org.lwjgl.opengl.GL20.*;
 
@@ -46,14 +47,14 @@ public class ShaderLoader {
     public static void checkProgramLinking(int program) {
         String s = glGetProgramInfoLog(program);
         if (!s.isEmpty())
-            System.err.println("Program compilation: " + s);
-        else System.err.println("Program compiled successfully");
+            Logger.getGlobal().info("Program compilation: " + s);
+        else Logger.getGlobal().info("Program compiled successfully");
     }
 
     public static void checkShaderCompilation(int shader) {
         String s = glGetShaderInfoLog(shader);
         if (!s.isEmpty())
-            System.err.println("Shader compilation: " + s);
-        else System.err.println("Shader compiled successfully");
+            Logger.getGlobal().info("Shader compilation: " + s);
+        else Logger.getGlobal().info("Shader compiled successfully");
     }
 }

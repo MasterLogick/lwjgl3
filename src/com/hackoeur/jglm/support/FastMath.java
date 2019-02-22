@@ -940,7 +940,7 @@ public class FastMath {
         }
 
         /* Get the fractional part of x, find the greatest multiple of 2^-10 less than
-         * x and look up the exp function of it.
+         * x and look UP the exp function of it.
          * fracPartA will have the upper 22 bits, fracPartB the lower 52 bits.
          */
         final int intFrac = (int) ((x - intVal) * 1024.0);
@@ -2723,7 +2723,7 @@ public class FastMath {
         rb = -(temp - ra - rb);
         ra = temp;
 
-        if (ra == 0) { // Fix up the sign so atan works correctly
+        if (ra == 0) { // Fix UP the sign so atan works correctly
             ra = copySign(0d, y);
         }
 
@@ -3129,7 +3129,7 @@ public class FastMath {
                 final long mostSignificantLostBit = mantissa & (1L << (-scaledExponent));
                 mantissa = mantissa >>> (1 - scaledExponent);
                 if (mostSignificantLostBit != 0) {
-                    // we need to add 1 bit to round up the result
+                    // we need to add 1 bit to round UP the result
                     mantissa++;
                 }
                 return Double.longBitsToDouble(sign | mantissa);
@@ -3213,7 +3213,7 @@ public class FastMath {
                 final int mostSignificantLostBit = mantissa & (1 << (-scaledExponent));
                 mantissa = mantissa >>> (1 - scaledExponent);
                 if (mostSignificantLostBit != 0) {
-                    // we need to add 1 bit to round up the result
+                    // we need to add 1 bit to round UP the result
                     mantissa++;
                 }
                 return Float.intBitsToFloat(sign | mantissa);

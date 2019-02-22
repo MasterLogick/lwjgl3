@@ -33,7 +33,6 @@ public class Shader {
 
     public void setProjectionMatrix(Mat4 projectionMatrix) {
         int loc = glGetUniformLocation(programID, "projectionMatrix");
-        System.out.println(loc+"\n"+projectionMatrix.toString());
         glUniformMatrix4fv(loc, false, projectionMatrix.getBuffer());
     }
 

@@ -1,5 +1,7 @@
 package net.ddns.logick.windows;
 
+import org.lwjgl.glfw.GLFWCursorPosCallback;
+import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.system.MemoryStack;
 
@@ -64,5 +66,9 @@ public class GLFWwindow {
 
     public void setKeyCallbacks(GLFWKeyCallbackI glfwKeyCallbackI) {
         glfwSetKeyCallback(id, glfwKeyCallbackI);
+    }
+
+    public void setMouseCallbacks(GLFWCursorPosCallbackI cdfn) {
+        glfwSetCursorPosCallback(id, cdfn);
     }
 }

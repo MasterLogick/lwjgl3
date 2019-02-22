@@ -7,11 +7,14 @@ import net.ddns.logick.render.shaders.Shader;
 import net.ddns.logick.render.shaders.ShaderLoader;
 import net.ddns.logick.render.textures.Texture;
 import net.ddns.logick.windows.GLFWwindow;
+import org.lwjgl.glfw.GLFWCursorPosCallback;
+import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -27,21 +30,15 @@ public class Main {
 
     public static void main(String[] args) {
         initGLFW();
-        Input input = new Input();
+        Camera cam = Camera.init(45f, ((float) SCR_WIDTH) / ((float) SCR_HEIGHT), 0.1f, 100f);
+        Input input = new Input(cam);
         GLFWwindow window = new GLFWwindow(SCR_WIDTH, SCR_HEIGHT, "Test");
         window.setCurrient();
         window.setVSync(1);
         window.showWindow();
         window.setKeyCallbacks(input);
+        window.setMouseCallbacks(input.cursorPosCallback);
         GL.createCapabilities();
-        Camera.init(45f, ((float) SCR_WIDTH) / ((float) SCR_HEIGHT), 0.1f, 100f);
-        FloatBuffer fb = Mat4.MAT4_IDENTITY.getBuffer();
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                System.out.print(fb.get() + " ");
-            }
-            System.out.println();
-        }
         glEnable(GL_DEPTH_TEST);
         Texture texture = new Texture("res/textures/brick-texture-png-23887.png");
         Shader newShader = null;
@@ -55,13 +52,13 @@ public class Main {
 
         int vao = initVao();
         glClearColor(0.11f, 0.11f, 0.11f, 0.0f);
+        Logger.getGlobal().info("initiated");
         while (!window.isWindowShouldClose()) {
             input.processInput(window);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//            oldShader.use();
             newShader.use();
-            newShader.setProjectionMatrix(Camera.projectionMatrix);
-            newShader.setViewMatrix(Camera.viewMatrix);
+            newShader.setProjectionMatrix(cam.projectionMatrix);
+            newShader.setViewMatrix(cam.viewMatrix);
             newShader.setModelMatrix(Mat4.MAT4_IDENTITY);
             texture.use();
             glBindVertexArray(vao);
@@ -69,10 +66,12 @@ public class Main {
             window.swapBuffers();
             glfwPollEvents();
         }
+        Logger.getGlobal().info("game loop was stopped");
         window.destroy();
         newShader.destroy();
         glfwTerminate();
         glfwSetErrorCallback(null).free();
+        Logger.getGlobal().info("exit");
     }
 
     public static void initGLFW() {

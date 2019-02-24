@@ -1,6 +1,5 @@
 package net.ddns.logick.input;
 
-import com.hackoeur.jglm.Vec3;
 import net.ddns.logick.render.Camera;
 import net.ddns.logick.windows.GLFWwindow;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
@@ -35,7 +34,7 @@ public class Input implements GLFWKeyCallbackI {
 
     public void processInput(GLFWwindow window) {
         if (keys[GLFW_KEY_ESCAPE]) {
-            window.windowShoulClose();
+            window.shoulClose();
         }
         if (keys[GLFW_KEY_C]) {
             camera.restoreDefaultPos();

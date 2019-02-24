@@ -46,15 +46,19 @@ public class ShaderLoader {
 
     public static void checkProgramLinking(int program) {
         String s = glGetProgramInfoLog(program);
-        if (!s.isEmpty())
-            Logger.getGlobal().info("Program compilation: " + s);
-        else Logger.getGlobal().info("Program compiled successfully");
+        if (!s.isEmpty()) {
+            Logger.getGlobal().severe("Program compilation: " + s);
+        } else {
+            Logger.getGlobal().info("Program compiled successfully");
+        }
     }
 
     public static void checkShaderCompilation(int shader) {
         String s = glGetShaderInfoLog(shader);
-        if (!s.isEmpty())
-            Logger.getGlobal().info("Shader compilation: " + s);
-        else Logger.getGlobal().info("Shader compiled successfully");
+        if (!s.isEmpty()) {
+            Logger.getGlobal().severe("Shader compilation: " + s);
+        } else {
+            Logger.getGlobal().info("Shader compiled successfully");
+        }
     }
 }

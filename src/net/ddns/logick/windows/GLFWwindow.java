@@ -51,7 +51,7 @@ public class GLFWwindow {
         return glfwWindowShouldClose(id);
     }
 
-    public void windowShoulClose() {
+    public void shoulClose() {
         glfwSetWindowShouldClose(id, true);
     }
 

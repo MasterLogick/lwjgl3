@@ -5,8 +5,6 @@ import com.hackoeur.jglm.Mat4;
 import com.hackoeur.jglm.Matrices;
 import com.hackoeur.jglm.Vec3;
 
-import java.util.logging.Logger;
-
 public class Camera {
     public static Vec3 POSITION = new Vec3();
     public static Vec3 EYE = new Vec3(0, 0, -1);
@@ -39,7 +37,6 @@ public class Camera {
 
     public void update() {
         if (isVectorsChanged) {
-            Logger.getGlobal().info("update");
             isVectorsChanged = false;
 //            up = position.add(UP);
             viewMatrix = Matrices.lookAt(position, eye, up);
@@ -50,7 +47,6 @@ public class Camera {
         isVectorsChanged = true;
         double deltaX = xpos - prevXpos;
         double deltaY = ypos - prevYpos;
-        Logger.getGlobal().info(yaw + " " + pitch);
         prevXpos = xpos;
         prevYpos = ypos;
         yaw -= deltaX * senetivity;

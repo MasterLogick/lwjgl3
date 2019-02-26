@@ -52,7 +52,7 @@ public class Camera {
         yaw -= deltaX * senetivity;
         pitch -= deltaY * senetivity;
         if (pitch > 0f)
-            pitch = 1f;
+            pitch = -1f;
         if (pitch < -180.0f)
             pitch = -179f;
         double radYaw = Math.toRadians(yaw);

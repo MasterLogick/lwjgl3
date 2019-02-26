@@ -11,7 +11,6 @@ import net.ddns.logick.windows.GLFWwindow;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
-import java.io.IOException;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -23,10 +22,9 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Main {
-    public static int SCR_WIDTH = 1000;
+    public static int SCR_WIDTH = 1300;
     public static int SCR_HEIGHT = 800;
     public static GLFWwindow window;
-    private static Vec3 lightPos = new Vec3(1.2f, 1.0f, 2.0f);
 
     public static void main(String[] args) {
         initGLFW();
@@ -42,14 +40,16 @@ public class Main {
         window.setKeyCallbacks(input);
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
-        Texture texture = new Texture("res/textures/brick-texture-png-23887.png");
+        Texture specularMap = new Texture("res/textures/container2_specular.png", GL_RGBA);
+        Texture diffuseMap = new Texture("res/textures/container2.png", GL_RGBA);
         Shader lightShader = null;
         Shader shader = null;
         try {
             lightShader = ShaderLoader.loadShaderProgram("res/shaders/lightedShader/vertex.glsl", "res/shaders/lightedShader/fragment.glsl");
             shader = ShaderLoader.loadShaderProgram("res/shaders/newShader1/vertex.glsl", "res/shaders/newShader1/fragment.glsl");
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            window.shoulClose();
         }
 
         int vao = initVAO1();
@@ -57,6 +57,7 @@ public class Main {
         glClearColor(0.11f, 0.11f, 0.11f, 0.0f);
         Logger.getGlobal().info("initialised");
         while (!window.isWindowShouldClose()) {
+            Vec3 lightPos = new Vec3(2 * (float) Math.sqrt(1 - Math.cos(glfwGetTime()) * Math.cos(glfwGetTime())) * (float) Math.signum(Math.sin(glfwGetTime())), 0, (float) Math.cos(glfwGetTime()) * 2);
             input.processInput(window);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             try {
@@ -65,7 +66,6 @@ public class Main {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            texture.use();
             glBindVertexArray(vao);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glBindVertexArray(0);
@@ -75,21 +75,25 @@ public class Main {
                 e.printStackTrace();
                 window.shoulClose();
             }
-            Vec3 lightColor = new Vec3((float) Math.sin(glfwGetTime() * 2.0f), (float) Math.sin(glfwGetTime() * 0.7f), (float) Math.sin(glfwGetTime() * 1.3f));
+            Vec3 lightColor = new Vec3(2.0f, 0.7f, 1.3f);
+            glActiveTexture(GL_TEXTURE0);
+            diffuseMap.use();
+            glActiveTexture(GL_TEXTURE1);
+            specularMap.use();
             try {
                 lightShader.setVec3f("light.position", lightPos);
                 lightShader.setVec3f("light.specular", new float[]{1.0f, 1.0f, 1.0f});
                 lightShader.setVec3f("light.ambient", lightColor.multiply(0.1f));
                 lightShader.setVec3f("light.diffuse", lightColor.multiply(0.5f));
-                lightShader.setVec3f("material.ambient", new float[]{1.0f, 0.5f, 0.31f});
-                lightShader.setVec3f("material.diffuse", new float[]{1.0f, 0.5f, 0.31f});
-                lightShader.setVec3f("material.specular", new float[]{0.5f, 0.5f, 0.5f});
+                lightShader.setInt("material.diffuse", 0);
+                lightShader.setInt("material.specular", 1);
                 lightShader.setFloat("material.shininess", 32);
-                lightShader.setModelMatrix(Mat4.MAT4_IDENTITY);
+                lightShader.setModelMatrix(Mat4.MAT4_IDENTITY.translate(new Vec3(0f, 0f, 0f)));
             } catch (Exception e) {
                 window.shoulClose();
                 e.printStackTrace();
             }
+
             glBindVertexArray(vao1);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             window.swapBuffers();
@@ -105,57 +109,60 @@ public class Main {
 
     private static int initVAO1() {
         float vertices[] = {
-                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-                0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-                0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-                0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-                -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+                // positions          // normals           // texture coords
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
 
-                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-                0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-                0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-                0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-                -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
-                -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
-                -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-                -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-                -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-                -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
-                -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 
-                0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
-                0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-                0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-                0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-                0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
-                0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 
-                -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-                0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-                0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
-                0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
-                -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
-                -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
 
-                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-                0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-                0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-                0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-                -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
         };
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
         int vbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * Float.BYTES, 0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * Float.BYTES, 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * Float.BYTES, 3 * Float.BYTES);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * Float.BYTES, 6 * Float.BYTES);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * Float.BYTES, 3 * Float.BYTES);
         glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         return vao;

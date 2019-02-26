@@ -43,7 +43,7 @@ public class Texture {
         }
     }
 
-    public Texture(String path) {
+    public Texture(String path,int imageType) {
         textureId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureId);
         glTexParameteri(GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_S);
@@ -54,7 +54,7 @@ public class Texture {
         IntBuffer height = BufferUtils.createIntBuffer(1);
         IntBuffer components = BufferUtils.createIntBuffer(1);
         ByteBuffer data = TextureLoader.loadTextureData(path, width, height, components, 0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width.get(), height.get(), 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width.get(), height.get(), 0, imageType, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
         stbi_image_free(data);
         glBindTexture(GL_TEXTURE_2D, 0);

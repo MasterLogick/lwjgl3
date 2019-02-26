@@ -2,13 +2,15 @@ package net.ddns.logick.render.shaders;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.logging.Logger;
 
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderLoader {
-    public static int loadShader(String path, int shaderType) throws Exception {
-        BufferedReader bf = new BufferedReader(new FileReader(path));
+    public static int loadShader(InputStream stream, int shaderType) throws Exception {
+        BufferedReader bf = new BufferedReader(new InputStreamReader(stream));
         String shader = "";
         String tmp;
         while ((tmp = bf.readLine()) != null) {
@@ -28,8 +30,8 @@ public class ShaderLoader {
         return shader;
     }
 
-    public static Shader loadShaderProgram(String pathToVertexShader, String pathToFragmentShader) throws Exception {
-        return linkShaderProgram(loadShader(pathToVertexShader, GL_VERTEX_SHADER), loadShader(pathToFragmentShader, GL_FRAGMENT_SHADER));
+    public static Shader loadShaderProgram(InputStream vertexShader, InputStream fragmentShader) throws Exception {
+        return linkShaderProgram(loadShader(vertexShader, GL_VERTEX_SHADER), loadShader(fragmentShader, GL_FRAGMENT_SHADER));
     }
 
     public static Shader linkShaderProgram(int vectorShader, int fragmentShader) throws Exception {

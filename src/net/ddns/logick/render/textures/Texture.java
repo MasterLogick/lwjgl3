@@ -3,6 +3,8 @@ package net.ddns.logick.render.textures;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
@@ -43,7 +45,7 @@ public class Texture {
         }
     }
 
-    public Texture(String path,int imageType) {
+    public Texture(InputStream inputStream, int imageType) throws IOException {
         textureId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureId);
         glTexParameteri(GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_S);
@@ -53,7 +55,7 @@ public class Texture {
         IntBuffer width = BufferUtils.createIntBuffer(1);
         IntBuffer height = BufferUtils.createIntBuffer(1);
         IntBuffer components = BufferUtils.createIntBuffer(1);
-        ByteBuffer data = TextureLoader.loadTextureData(path, width, height, components, 0);
+        ByteBuffer data = TextureLoader.loadTextureData(inputStream, width, height, components, 0);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width.get(), height.get(), 0, imageType, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
         stbi_image_free(data);

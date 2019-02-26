@@ -10,7 +10,9 @@ import net.ddns.logick.render.textures.Texture;
 import net.ddns.logick.windows.GLFWwindow;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+import res.ResourseManager;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -40,13 +42,23 @@ public class Main {
         window.setKeyCallbacks(input);
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
-        Texture specularMap = new Texture("res/textures/container2_specular.png", GL_RGBA);
-        Texture diffuseMap = new Texture("res/textures/container2.png", GL_RGBA);
+        Texture specularMap = null;
+        try {
+            specularMap = new Texture(ResourseManager.getResourseByPath("textures/container2_specular.png"), GL_RGBA);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Texture diffuseMap = null;
+        try {
+            diffuseMap = new Texture(ResourseManager.getResourseByPath("textures/container2.png"), GL_RGBA);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Shader lightShader = null;
         Shader shader = null;
         try {
-            lightShader = ShaderLoader.loadShaderProgram("res/shaders/lightedShader/vertex.glsl", "res/shaders/lightedShader/fragment.glsl");
-            shader = ShaderLoader.loadShaderProgram("res/shaders/newShader1/vertex.glsl", "res/shaders/newShader1/fragment.glsl");
+            lightShader = ShaderLoader.loadShaderProgram(ResourseManager.getResourseByPath("shaders/lightedShader/vertex.glsl"), ResourseManager.getResourseByPath("shaders/lightedShader/fragment.glsl"));
+            shader = ShaderLoader.loadShaderProgram(ResourseManager.getResourseByPath("shaders/newShader1/vertex.glsl"),ResourseManager.getResourseByPath( "shaders/newShader1/fragment.glsl"));
         } catch (Exception e) {
             e.printStackTrace();
             window.shoulClose();

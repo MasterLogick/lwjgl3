@@ -42,15 +42,11 @@ public class Main {
         window.setKeyCallbacks(input);
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
+        Texture diffuseMap = null;
         Texture specularMap = null;
         try {
-            specularMap = new Texture(ResourseManager.getResourseByPath("textures/container2_specular.png"), GL_RGBA);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Texture diffuseMap = null;
-        try {
             diffuseMap = new Texture(ResourseManager.getResourseByPath("textures/container2.png"), GL_RGBA);
+            specularMap = new Texture(ResourseManager.getResourseByPath("textures/container2_specular.png"), GL_RGBA);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -67,6 +63,10 @@ public class Main {
         int vao = initVAO1();
         int vao1 = initVAO1();
         glClearColor(0.11f, 0.11f, 0.11f, 0.0f);
+        glActiveTexture(GL_TEXTURE0);
+        diffuseMap.use();
+        glActiveTexture(GL_TEXTURE1);
+        specularMap.use();
         Logger.getGlobal().info("initialised");
         while (!window.isWindowShouldClose()) {
             Vec3 lightPos = new Vec3(2 * (float) Math.sqrt(1 - Math.cos(glfwGetTime()) * Math.cos(glfwGetTime())) * (float) Math.signum(Math.sin(glfwGetTime())), 0, (float) Math.cos(glfwGetTime()) * 2);
@@ -88,10 +88,7 @@ public class Main {
                 window.shoulClose();
             }
             Vec3 lightColor = new Vec3(2.0f, 0.7f, 1.3f);
-            glActiveTexture(GL_TEXTURE0);
-            diffuseMap.use();
-            glActiveTexture(GL_TEXTURE1);
-            specularMap.use();
+
             try {
                 lightShader.setVec3f("light.position", lightPos);
                 lightShader.setVec3f("light.specular", new float[]{1.0f, 1.0f, 1.0f});
@@ -120,7 +117,7 @@ public class Main {
     }
 
     private static int initVAO1() {
-        float vertices[] = {
+        float[] vertices = {
                 // positions          // normals           // texture coords
                 -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
                 0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,

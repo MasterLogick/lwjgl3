@@ -1,7 +1,8 @@
 package net.ddns.logick.render.shaders;
 
+import res.ResourseManager;
+
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.logging.Logger;
@@ -9,6 +10,10 @@ import java.util.logging.Logger;
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderLoader {
+    public static Shader loadShaderFromResourses(String name) throws Exception {
+        return ShaderLoader.loadShaderProgram(ResourseManager.getResourseByPath("shaders/" + name + "/vertex.glsl"), ResourseManager.getResourseByPath("shaders/" + name + "/fragment.glsl"));
+    }
+
     public static int loadShader(InputStream stream, int shaderType) throws Exception {
         BufferedReader bf = new BufferedReader(new InputStreamReader(stream));
         String shader = "";

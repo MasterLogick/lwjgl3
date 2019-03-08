@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import res.ResourseManager;
 
-import java.io.IOException;
+import java.awt.*;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -42,19 +42,21 @@ public class Main {
         window.setKeyCallbacks(input);
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+//        glEnable(GL_BLEND);
+//        glEnable(GL_CULL_FACE);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
         Texture diffuseMap = null;
         Texture specularMap = null;
+        Shader lightShader = null;
+        Shader shader = null;
+        Shader fillingShader = null;
         try {
             diffuseMap = new Texture(ResourseManager.getResourseByPath("textures/container2.png"), GL_RGBA);
             specularMap = new Texture(ResourseManager.getResourseByPath("textures/container2_specular.png"), GL_RGBA);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Shader lightShader = null;
-        Shader shader = null;
-        try {
-            lightShader = ShaderLoader.loadShaderProgram(ResourseManager.getResourseByPath("shaders/lightedShader/vertex.glsl"), ResourseManager.getResourseByPath("shaders/lightedShader/fragment.glsl"));
-            shader = ShaderLoader.loadShaderProgram(ResourseManager.getResourseByPath("shaders/newShader1/vertex.glsl"),ResourseManager.getResourseByPath( "shaders/newShader1/fragment.glsl"));
+            lightShader = ShaderLoader.loadShaderFromResourses("lightedShader");
+            shader = ShaderLoader.loadShaderFromResourses("lightShader");
+            fillingShader = ShaderLoader.loadShaderFromResourses("fillingShader");
         } catch (Exception e) {
             e.printStackTrace();
             window.shoulClose();
@@ -63,15 +65,14 @@ public class Main {
         int vao = initVAO1();
         int vao1 = initVAO1();
         glClearColor(0.11f, 0.11f, 0.11f, 0.0f);
-        glActiveTexture(GL_TEXTURE0);
-        diffuseMap.use();
-        glActiveTexture(GL_TEXTURE1);
-        specularMap.use();
+        diffuseMap.bindTo(GL_TEXTURE0);
+        specularMap.bindTo(GL_TEXTURE1);
         Logger.getGlobal().info("initialised");
+        float scale = 1.04f;
         while (!window.isWindowShouldClose()) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             Vec3 lightPos = new Vec3(2 * (float) Math.sqrt(1 - Math.cos(glfwGetTime()) * Math.cos(glfwGetTime())) * (float) Math.signum(Math.sin(glfwGetTime())), 0, (float) Math.cos(glfwGetTime()) * 2);
             input.processInput(window);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             try {
                 shader.use(cam.projectionMatrix, cam.viewMatrix);
                 shader.setModelMatrix(Mat4.MAT4_IDENTITY.translate(lightPos));
@@ -80,16 +81,9 @@ public class Main {
             }
             glBindVertexArray(vao);
             glDrawArrays(GL_TRIANGLES, 0, 36);
-            glBindVertexArray(0);
+            Vec3 lightColor = new Vec3(2.0f, 0.7f, 1.3f);
             try {
                 lightShader.use(cam.projectionMatrix, cam.viewMatrix);
-            } catch (Exception e) {
-                e.printStackTrace();
-                window.shoulClose();
-            }
-            Vec3 lightColor = new Vec3(2.0f, 0.7f, 1.3f);
-
-            try {
                 lightShader.setVec3f("light.position", lightPos);
                 lightShader.setVec3f("light.specular", new float[]{1.0f, 1.0f, 1.0f});
                 lightShader.setVec3f("light.ambient", lightColor.multiply(0.1f));
@@ -102,9 +96,24 @@ public class Main {
                 window.shoulClose();
                 e.printStackTrace();
             }
-
             glBindVertexArray(vao1);
+            glStencilFunc(GL_ALWAYS, 1, 0xFF);
+            glStencilMask(0xFF);
             glDrawArrays(GL_TRIANGLES, 0, 36);
+            glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+            glStencilMask(0x00);
+            glDisable(GL_DEPTH_TEST);
+            try {
+                fillingShader.use(cam.projectionMatrix, cam.viewMatrix);
+                fillingShader.setModelMatrix(new Mat4(scale, scale, scale));
+                fillingShader.setColor("color", new Color(35, 115, 133));
+            } catch (Exception e) {
+                window.shoulClose();
+                e.printStackTrace();
+            }
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glStencilMask(0xFF);
+            glEnable(GL_DEPTH_TEST);
             window.swapBuffers();
             glfwPollEvents();
         }

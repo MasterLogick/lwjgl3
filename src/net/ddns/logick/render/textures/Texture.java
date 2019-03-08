@@ -11,6 +11,7 @@ import java.nio.IntBuffer;
 import java.util.logging.Logger;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.stb.STBImage.*;
 
@@ -84,5 +85,10 @@ public class Texture {
     public void use() {
         glBindTexture(GL_TEXTURE_2D, textureId);
         Logger.getGlobal().info("Used texture with id: " + textureId);
+    }
+
+    public void bindTo(int a) {
+        glActiveTexture(a);
+        use();
     }
 }

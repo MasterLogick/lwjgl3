@@ -3,6 +3,7 @@ package net.ddns.logick.render.shaders;
 import com.hackoeur.jglm.Mat4;
 import com.hackoeur.jglm.Vec3;
 
+import java.awt.*;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -40,6 +41,12 @@ public class Shader {
         int loc = glGetUniformLocation(programID, "projectionMatrix");
         if (loc == -1) throw new Exception("Invalid uniform variable's name: projectionMatrix");
         glUniformMatrix4fv(loc, false, projectionMatrix.getBuffer());
+    }
+
+    public void setColor(String name, Color val) throws Exception {
+        int loc = glGetUniformLocation(programID, name);
+        if (loc == -1) throw new Exception("Invalid uniform variable's name: " + name);
+        glUniform3fv(loc, new Vec3(val.getRed(), val.getGreen(), val.getBlue()).getUnitVector().getBuffer());
     }
 
     public void setInt(String name, int val) throws Exception {

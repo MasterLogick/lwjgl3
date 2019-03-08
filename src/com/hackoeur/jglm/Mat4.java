@@ -248,6 +248,17 @@ public final class Mat4 extends com.hackoeur.jglm.AbstractMat {
 		this.m33 = mat.m33;
 	}
 
+	public Mat4(float scaleX, float scaleY, float scaleZ) {
+		m10 = m20 = m30 = 0f;
+		m01 = m21 = m31 = 0f;
+		m02 = m12 = m32 = 0f;
+		m03 = m13 = m23 = 0f;
+		m00 = scaleX;
+		m11 = scaleY;
+		m22 = scaleZ;
+		m33 = 1;
+	}
+
 	@Override
 	public int getNumRows() {
 		return 4;
@@ -323,7 +334,6 @@ public final class Mat4 extends com.hackoeur.jglm.AbstractMat {
 
 		return buffer;
 	}
-
 	@Override
 	public boolean isIdentity() {
 		return Compare.equals(m00, 1f, Compare.MAT_EPSILON)
@@ -532,10 +542,7 @@ public final class Mat4 extends com.hackoeur.jglm.AbstractMat {
 		if (Float.floatToIntBits(m32) != Float.floatToIntBits(other.m32)) {
 			return false;
 		}
-		if (Float.floatToIntBits(m33) != Float.floatToIntBits(other.m33)) {
-			return false;
-		}
-		return true;
+		return Float.floatToIntBits(m33) == Float.floatToIntBits(other.m33);
 	}
 	
 	@Override

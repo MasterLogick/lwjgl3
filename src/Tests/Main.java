@@ -8,6 +8,7 @@ import net.ddns.logick.render.shaders.Shader;
 import net.ddns.logick.render.shaders.ShaderLoader;
 import net.ddns.logick.render.textures.Texture;
 import net.ddns.logick.windows.GLFWwindow;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import res.ResourseManager;
@@ -20,8 +21,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30.*;
 
 public class Main {
     public static int SCR_WIDTH = 1300;
@@ -40,37 +40,87 @@ public class Main {
         window.setMousePos(SCR_WIDTH / 2, SCR_HEIGHT / 2);
         window.setMouseCallbacks(input.cursorPosCallback);
         window.setKeyCallbacks(input);
+        window.setResizable(false);
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_STENCIL_TEST);
-//        glEnable(GL_BLEND);
-//        glEnable(GL_CULL_FACE);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+
         Texture diffuseMap = null;
         Texture specularMap = null;
         Shader lightShader = null;
         Shader shader = null;
         Shader fillingShader = null;
+        Shader screenShader = null;
         try {
             diffuseMap = new Texture(ResourseManager.getResourseByPath("textures/container2.png"), GL_RGBA);
             specularMap = new Texture(ResourseManager.getResourseByPath("textures/container2_specular.png"), GL_RGBA);
             lightShader = ShaderLoader.loadShaderFromResourses("lightedShader");
             shader = ShaderLoader.loadShaderFromResourses("lightShader");
             fillingShader = ShaderLoader.loadShaderFromResourses("fillingShader");
+            screenShader = ShaderLoader.loadShaderFromResourses("postProcessingShader");
         } catch (Exception e) {
             e.printStackTrace();
             window.shoulClose();
         }
 
+
+        float[] quadVertices = {
+                // positions   // texCoords
+                -1.0f, 1.0f, 0.0f, 1.0f,
+                -1.0f, -1.0f, 0.0f, 0.0f,
+                1.0f, -1.0f, 1.0f, 0.0f,
+
+                -1.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, -1.0f, 1.0f, 0.0f,
+                1.0f, 1.0f, 1.0f, 1.0f
+        };
+        int quadVAO, quadVBO;
+        quadVAO = glGenVertexArrays();
+        quadVBO = glGenBuffers();
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(0, 2, GL_FLOAT, false, 4 * Float.BYTES, 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * Float.BYTES, 2 * Float.BYTES);
+
+
+        int frameBuffer = glGenFramebuffers();
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+        int textureColorBuffer = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, BufferUtils.createByteBuffer(SCR_WIDTH * SCR_HEIGHT * 3));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
+        int rbo = glGenRenderbuffers();
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            Logger.getGlobal().throwing("", "", new Exception("FrameBuffer isn't ready"));
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
         int vao = initVAO1();
         int vao1 = initVAO1();
-        glClearColor(0.11f, 0.11f, 0.11f, 0.0f);
-        diffuseMap.bindTo(GL_TEXTURE0);
-        specularMap.bindTo(GL_TEXTURE1);
+
         Logger.getGlobal().info("initialised");
         float scale = 1.04f;
         while (!window.isWindowShouldClose()) {
+            glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+            glEnable(GL_DEPTH_TEST);
+            glDepthMask(true);
+            glEnable(GL_STENCIL_TEST);
+
+
+            glClearColor(0.11f, 0.11f, 0.11f, 1f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            diffuseMap.bindTo(GL_TEXTURE0);
+            specularMap.bindTo(GL_TEXTURE1);
             Vec3 lightPos = new Vec3(2 * (float) Math.sqrt(1 - Math.cos(glfwGetTime()) * Math.cos(glfwGetTime())) * (float) Math.signum(Math.sin(glfwGetTime())), 0, (float) Math.cos(glfwGetTime()) * 2);
             input.processInput(window);
             try {
@@ -102,7 +152,7 @@ public class Main {
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glStencilFunc(GL_NOTEQUAL, 1, 0xff);
             glStencilMask(0x00);
-            glDisable(GL_DEPTH_TEST);
+            glDepthMask(false);
             try {
                 fillingShader.use(cam.projectionMatrix, cam.viewMatrix);
                 fillingShader.setModelMatrix(new Mat4(scale, scale, scale));
@@ -113,13 +163,32 @@ public class Main {
             }
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glStencilMask(0xFF);
-            glEnable(GL_DEPTH_TEST);
+
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_STENCIL_TEST);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            screenShader.use();
+            try {
+                screenShader.setInt("screenTexture", 0);
+                screenShader.setBoolean("isColorsInverted", input.flag);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            glActiveTexture(GL_TEXTURE0);
+            glBindVertexArray(quadVAO);
+            glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
             window.swapBuffers();
             glfwPollEvents();
         }
         Logger.getGlobal().info("game loop was stopped");
         window.destroy();
         lightShader.destroy();
+        fillingShader.destroy();
+        shader.destroy();
         glfwTerminate();
         glfwSetErrorCallback(null).free();
         Logger.getGlobal().info("exit");

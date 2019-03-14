@@ -17,6 +17,10 @@ public class Shader {
         setViewMatrix(viewMatrix);
     }
 
+    public void use() {
+        glUseProgram(programID);
+    }
+
     public Shader(int programID) {
         this.programID = programID;
     }
@@ -113,5 +117,11 @@ public class Shader {
         int loc = glGetUniformLocation(programID, name);
         if (loc == -1) throw new Exception("Invalid uniform variable's name: " + name);
         glUniformMatrix3fv(programID, transpose, mat3.getBuffer());
+    }
+
+    public void setBoolean(String name, boolean val) throws Exception {
+        int loc = glGetUniformLocation(programID, name);
+        if (loc == -1) throw new Exception("Invalid uniform variable's name: " + name);
+        glUniform1i(loc, val ? 1 : 0);
     }
 }

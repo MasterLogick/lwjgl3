@@ -1,6 +1,5 @@
 package net.ddns.logick.windows;
 
-import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.system.MemoryStack;
@@ -62,6 +61,10 @@ public class GLFWwindow {
     public void destroy() {
         freeCallbacks();
         glfwDestroyWindow(id);
+    }
+
+    public void setResizable(boolean resizable) {
+        glfwSetWindowAttrib(id, GLFW_RESIZABLE, resizable ? GLFW_TRUE : GLFW_FALSE);
     }
 
     public void setKeyCallbacks(GLFWKeyCallbackI glfwKeyCallbackI) {

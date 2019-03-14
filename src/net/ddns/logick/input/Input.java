@@ -10,6 +10,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Input implements GLFWKeyCallbackI {
     private boolean[] keys = new boolean[512];
     private Camera camera;
+    public boolean flag = false;
     public GLFWCursorPosCallback cursorPosCallback = new GLFWCursorPosCallback() {
         @Override
         public void invoke(long window, double xpos, double ypos) {
@@ -26,10 +27,7 @@ public class Input implements GLFWKeyCallbackI {
 
     @Override
     public void invoke(long window, int key, int scancode, int action, int mods) {
-        if (action == GLFW_RELEASE)
-            keys[key] = false;
-        else
-            keys[key] = true;
+        keys[key] = action != GLFW_RELEASE;
     }
 
     public void processInput(GLFWwindow window) {
@@ -56,6 +54,9 @@ public class Input implements GLFWKeyCallbackI {
         }
         if (keys[GLFW_KEY_LEFT_SHIFT]) {
             camera.moveDown();
+        }
+        if (keys[GLFW_KEY_I]) {
+            flag = !flag;
         }
         camera.update();
     }

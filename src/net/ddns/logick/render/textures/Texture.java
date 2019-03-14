@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.logging.Logger;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
@@ -84,7 +83,6 @@ public class Texture {
 
     public void use() {
         glBindTexture(GL_TEXTURE_2D, textureId);
-        Logger.getGlobal().info("Used texture with id: " + textureId);
     }
 
     public void bindTo(int a) {

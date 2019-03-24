@@ -22,6 +22,7 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 
 public class Main {
     public static int SCR_WIDTH = 1300;
@@ -48,8 +49,8 @@ public class Main {
 
         Texture diffuseMap = null;
         Texture specularMap = null;
-        Shader lightShader = null;
         Shader shader = null;
+        Shader lightShader = null;
         Shader fillingShader = null;
         Shader screenShader = null;
         try {
@@ -59,12 +60,14 @@ public class Main {
             shader = ShaderLoader.loadShaderFromResourses("lightShader");
             fillingShader = ShaderLoader.loadShaderFromResourses("fillingShader");
             screenShader = ShaderLoader.loadShaderFromResourses("postProcessingShader");
+            shader.bindMatricesToGlobalPoint("Matrices");
+            fillingShader.bindMatricesToGlobalPoint("Matrices");
+            lightShader.bindMatricesToGlobalPoint("Matrices");
         } catch (Exception e) {
             e.printStackTrace();
             window.shoulClose();
         }
-
-
+        int blockVBO;
         float[] quadVertices = {
                 // positions   // texCoords
                 -1.0f, 1.0f, 0.0f, 1.0f,
@@ -75,7 +78,15 @@ public class Main {
                 1.0f, -1.0f, 1.0f, 0.0f,
                 1.0f, 1.0f, 1.0f, 1.0f
         };
+
         int quadVAO, quadVBO;
+        blockVBO = glGenBuffers();
+        glBindBuffer(GL_UNIFORM_BUFFER, blockVBO);
+        glBufferData(GL_UNIFORM_BUFFER, 2L * 16 * Float.BYTES, GL_STATIC_DRAW);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, cam.projectionMatrix.getBuffer());
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        glBindBufferRange(GL_UNIFORM_BUFFER, Shader.MATRICES_BINDING_POINT, blockVBO, 0, 2 * Mat4.BYTES);
+
         quadVAO = glGenVertexArrays();
         quadVBO = glGenBuffers();
         glBindVertexArray(quadVAO);
@@ -85,7 +96,6 @@ public class Main {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(0, 2, GL_FLOAT, false, 4 * Float.BYTES, 0);
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * Float.BYTES, 2 * Float.BYTES);
-
 
         int frameBuffer = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -116,24 +126,26 @@ public class Main {
             glDepthMask(true);
             glEnable(GL_STENCIL_TEST);
 
-
             glClearColor(0.11f, 0.11f, 0.11f, 1f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             diffuseMap.bindTo(GL_TEXTURE0);
             specularMap.bindTo(GL_TEXTURE1);
             Vec3 lightPos = new Vec3(2 * (float) Math.sqrt(1 - Math.cos(glfwGetTime()) * Math.cos(glfwGetTime())) * (float) Math.signum(Math.sin(glfwGetTime())), 0, (float) Math.cos(glfwGetTime()) * 2);
             input.processInput(window);
+            shader.use(/*cam.projectionMatrix, cam.viewMatrix*/);
             try {
-                shader.use(cam.projectionMatrix, cam.viewMatrix);
                 shader.setModelMatrix(Mat4.MAT4_IDENTITY.translate(lightPos));
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            glBindBuffer(GL_UNIFORM_BUFFER, blockVBO);
+            glBufferSubData(GL_UNIFORM_BUFFER, Mat4.BYTES, cam.viewMatrix.getBuffer());
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
             glBindVertexArray(vao);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             Vec3 lightColor = new Vec3(2.0f, 0.7f, 1.3f);
+            lightShader.use(/*cam.projectionMatrix, cam.viewMatrix*/);
             try {
-                lightShader.use(cam.projectionMatrix, cam.viewMatrix);
                 lightShader.setVec3f("light.position", lightPos);
                 lightShader.setVec3f("light.specular", new float[]{1.0f, 1.0f, 1.0f});
                 lightShader.setVec3f("light.ambient", lightColor.multiply(0.1f));
@@ -153,8 +165,8 @@ public class Main {
             glStencilFunc(GL_NOTEQUAL, 1, 0xff);
             glStencilMask(0x00);
             glDepthMask(false);
+            fillingShader.use(/*cam.projectionMatrix, cam.viewMatrix*/);
             try {
-                fillingShader.use(cam.projectionMatrix, cam.viewMatrix);
                 fillingShader.setModelMatrix(new Mat4(scale, scale, scale));
                 fillingShader.setColor("color", new Color(35, 115, 133));
             } catch (Exception e) {
@@ -163,7 +175,6 @@ public class Main {
             }
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glStencilMask(0xFF);
-
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glDisable(GL_DEPTH_TEST);

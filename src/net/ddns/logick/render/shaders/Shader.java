@@ -7,14 +7,17 @@ import java.awt.*;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL31.glGetUniformBlockIndex;
+import static org.lwjgl.opengl.GL31.glUniformBlockBinding;
 
 public class Shader {
     private int programID;
+    public static final int MATRICES_BINDING_POINT = 0;
 
     public void use(Mat4 projectionMatrix, Mat4 viewMatrix) throws Exception {
         glUseProgram(programID);
-        setProjectionMatrix(projectionMatrix);
-        setViewMatrix(viewMatrix);
+        /*setProjectionMatrix(projectionMatrix);
+        setViewMatrix(viewMatrix);*/
     }
 
     public void use() {
@@ -29,13 +32,19 @@ public class Shader {
         glDeleteProgram(programID);
     }
 
+    public void bindMatricesToGlobalPoint(String name) throws Exception {
+        int lights_index = glGetUniformBlockIndex(programID, name);
+        if (lights_index == -1) throw new Exception("Invalid uniform block name: " + name);
+        glUniformBlockBinding(programID, lights_index, MATRICES_BINDING_POINT);
+    }
+
     public void setModelMatrix(Mat4 modelMatrix) throws Exception {
         int loc = glGetUniformLocation(programID, "modelMatrix");
         if (loc == -1) throw new Exception("Invalid uniform variable's name: modelMatrix");
         glUniformMatrix4fv(loc, false, modelMatrix.getBuffer());
     }
 
-    public void setViewMatrix(Mat4 viewMatrix) throws Exception {
+    /*public void setViewMatrix(Mat4 viewMatrix) throws Exception {
         int loc = glGetUniformLocation(programID, "viewMatrix");
         if (loc == -1) throw new Exception("Invalid uniform variable's name: viewMatrix");
         glUniformMatrix4fv(loc, false, viewMatrix.getBuffer());
@@ -45,7 +54,7 @@ public class Shader {
         int loc = glGetUniformLocation(programID, "projectionMatrix");
         if (loc == -1) throw new Exception("Invalid uniform variable's name: projectionMatrix");
         glUniformMatrix4fv(loc, false, projectionMatrix.getBuffer());
-    }
+    }*/
 
     public void setColor(String name, Color val) throws Exception {
         int loc = glGetUniformLocation(programID, name);

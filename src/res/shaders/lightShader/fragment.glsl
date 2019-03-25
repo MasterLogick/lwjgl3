@@ -1,5 +1,5 @@
 #version 330 core
-in vec2 texCord;
+//in vec2 texCord;
 out vec4 color;
 void main()
 {

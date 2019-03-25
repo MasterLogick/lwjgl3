@@ -1,7 +1,7 @@
 package net.ddns.logick.input;
 
 import net.ddns.logick.render.Camera;
-import net.ddns.logick.windows.GLFWwindow;
+import net.ddns.logick.windows.GLFWWindow;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
@@ -31,7 +31,7 @@ public class Input implements GLFWKeyCallbackI {
         keys[key] = action != GLFW_RELEASE;
     }
 
-    public void processInput(GLFWwindow window) {
+    public void processInput(GLFWWindow window) {
         if (keys[GLFW_KEY_ESCAPE]) {
             window.shoulClose();
         }

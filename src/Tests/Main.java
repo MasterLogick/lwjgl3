@@ -6,8 +6,7 @@ import net.ddns.logick.render.Camera;
 import net.ddns.logick.render.shaders.Shader;
 import net.ddns.logick.render.shaders.ShaderLoader;
 import net.ddns.logick.render.textures.Texture;
-import net.ddns.logick.windows.GLFWwindow;
-import org.lwjgl.BufferUtils;
+import net.ddns.logick.windows.GLFWWindow;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11C;
@@ -21,21 +20,23 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
-import static org.lwjgl.opengl.GL31C.glDrawArraysInstanced;
+import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
+import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_2D_MULTISAMPLE;
+import static org.lwjgl.opengl.GL32.glTexImage2DMultisample;
 import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 
 public class Main {
     public static int SCR_WIDTH = 1300;
     public static int SCR_HEIGHT = 800;
-    public static GLFWwindow window;
+    public static GLFWWindow window;
     private static int a = 1000;
 
     public static void main(String[] args) {
         initGLFW();
         Camera cam = Camera.init(45f, ((float) SCR_WIDTH) / ((float) SCR_HEIGHT), 0.1f, 100f);
         Input input = new Input(cam);
-        window = new GLFWwindow(SCR_WIDTH, SCR_HEIGHT, "Test");
+        window = new GLFWWindow(SCR_WIDTH, SCR_HEIGHT, "Test");
         window.setCurrient();
         window.setVSync(1);
         window.showWindow();
@@ -69,7 +70,15 @@ public class Main {
             e.printStackTrace();
             window.shoulClose();
         }
+
         int blockVBO;
+        blockVBO = glGenBuffers();
+        glBindBuffer(GL_UNIFORM_BUFFER, blockVBO);
+        glBufferData(GL_UNIFORM_BUFFER, 2L * 16 * Float.BYTES, GL_STATIC_DRAW);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, cam.projectionMatrix.getBuffer());
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        glBindBufferRange(GL_UNIFORM_BUFFER, Shader.MATRICES_BINDING_POINT, blockVBO, 0, 2 * Mat4.BYTES);
+
         float[] quadVertices = {
                 // positions   // texCoords
                 -1.0f, 1.0f, 0.0f, 1.0f,
@@ -80,15 +89,7 @@ public class Main {
                 1.0f, -1.0f, 1.0f, 0.0f,
                 1.0f, 1.0f, 1.0f, 1.0f
         };
-
         int quadVAO, quadVBO;
-        blockVBO = glGenBuffers();
-        glBindBuffer(GL_UNIFORM_BUFFER, blockVBO);
-        glBufferData(GL_UNIFORM_BUFFER, 2L * 16 * Float.BYTES, GL_STATIC_DRAW);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, cam.projectionMatrix.getBuffer());
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        glBindBufferRange(GL_UNIFORM_BUFFER, Shader.MATRICES_BINDING_POINT, blockVBO, 0, 2 * Mat4.BYTES);
-
         quadVAO = glGenVertexArrays();
         quadVBO = glGenBuffers();
         glBindVertexArray(quadVAO);
@@ -102,15 +103,15 @@ public class Main {
         int frameBuffer = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
         int textureColorBuffer = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, BufferUtils.createByteBuffer(SCR_WIDTH * SCR_HEIGHT * 3));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBuffer);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, true);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBuffer, 0);
         int rbo = glGenRenderbuffers();
         glBindRenderbuffer(GL_RENDERBUFFER, rbo);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             Logger.getGlobal().throwing("", "", new Exception("FrameBuffer isn't ready"));
         }

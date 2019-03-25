@@ -11,10 +11,10 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public class GLFWwindow {
+public class GLFWWindow {
     private long id;
 
-    public GLFWwindow(int width, int height, String name) {
+    public GLFWWindow(int width, int height, String name) {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         id = glfwCreateWindow(width, height, name, NULL, NULL);

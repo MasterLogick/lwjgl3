@@ -16,6 +16,7 @@ public class GLFWWindow {
 
     public GLFWWindow(int width, int height, String name) {
         glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         id = glfwCreateWindow(width, height, name, NULL, NULL);
         if (id == NULL)

@@ -11,7 +11,7 @@ public class Input implements GLFWKeyCallbackI {
     private boolean[] keys = new boolean[512];
     private Camera camera;
     public boolean flag = false;
-    public int a = 0;
+    public int a = 5;
     public GLFWCursorPosCallback cursorPosCallback = new GLFWCursorPosCallback() {
         @Override
         public void invoke(long window, double xpos, double ypos) {

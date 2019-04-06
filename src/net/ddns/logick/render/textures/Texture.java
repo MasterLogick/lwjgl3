@@ -11,6 +11,7 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL21.GL_SRGB_ALPHA;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.stb.STBImage.*;
 
@@ -58,7 +59,7 @@ public class Texture {
         IntBuffer height = BufferUtils.createIntBuffer(1);
         IntBuffer components = BufferUtils.createIntBuffer(1);
         ByteBuffer data = loadTextureData(inputStream, width, height, components, 0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width.get(), height.get(), 0, imageType, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width.get(), height.get(), 0, imageType, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
         stbi_image_free(data);
         glBindTexture(GL_TEXTURE_2D, 0);

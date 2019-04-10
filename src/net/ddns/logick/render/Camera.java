@@ -1,6 +1,6 @@
 package net.ddns.logick.render;
 
-import Tests.Main;
+import Tests.MainOpenGL;
 import com.hackoeur.jglm.Mat4;
 import com.hackoeur.jglm.Matrices;
 import com.hackoeur.jglm.Vec3;
@@ -19,8 +19,8 @@ public class Camera {
     public Mat4 projectionMatrix;
     private float speed = 0.15f;
     private double senetivity = 0.25;
-    private double prevXpos = Main.SCR_WIDTH / 2;
-    private double prevYpos = Main.SCR_HEIGHT / 2;
+    private double prevXpos = MainOpenGL.SCR_WIDTH / 2;
+    private double prevYpos = MainOpenGL.SCR_HEIGHT / 2;
     private double yaw = YAW;
     private double pitch = PITCH;
 
@@ -102,9 +102,9 @@ public class Camera {
         up = UP;
         pitch = PITCH;
         yaw = YAW;
-        Main.window.setMousePos(Main.SCR_WIDTH / 2, Main.SCR_HEIGHT / 2);
-        prevXpos = Main.SCR_WIDTH / 2;
-        prevYpos = Main.SCR_HEIGHT / 2;
+        MainOpenGL.window.setMousePos(MainOpenGL.SCR_WIDTH / 2, MainOpenGL.SCR_HEIGHT / 2);
+        prevXpos = MainOpenGL.SCR_WIDTH / 2;
+        prevYpos = MainOpenGL.SCR_HEIGHT / 2;
         isVectorsChanged = true;
     }
 }

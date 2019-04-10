@@ -27,7 +27,7 @@ import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_2D_MULTISAMPLE;
 import static org.lwjgl.opengl.GL32.glTexImage2DMultisample;
 
-public class Main {
+public class MainOpenGL {
     public static int SCR_WIDTH = 1300;
     public static int SCR_HEIGHT = 800;
     public static GLFWWindow window;

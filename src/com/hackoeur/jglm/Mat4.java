@@ -622,4 +622,15 @@ public final class Mat4 extends com.hackoeur.jglm.AbstractMat {
                 .append("\n}")
                 .toString();
     }
+
+    public Mat4 rotate(float vx, float vy, float vz, float angle) {
+        float sin = (float) Math.sin(angle);
+        float cos = (float) Math.cos(angle);
+        float micos = 1 - cos;
+        Mat4 rot = new Mat4(cos + vx * vx * micos, vy * vx * micos + vz * sin, vz * vx * micos - vy * sin, 0,
+                vx * vy * micos - vz * sin, cos + vy * vy * micos, vz * vy * micos + vx * sin, 0,
+                vx * vz * micos + vy * sin, vy * vz * micos - vx * sin, cos + vz * vz * micos, 0,
+                0, 0, 0, 1);
+        return this.multiply(rot);
+    }
 }

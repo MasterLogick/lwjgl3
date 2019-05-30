@@ -1,7 +1,6 @@
 package Tests;
 
 import com.hackoeur.jglm.Mat4;
-import com.hackoeur.jglm.Vec3;
 import net.ddns.logick.input.Input;
 import net.ddns.logick.render.Camera;
 import net.ddns.logick.render.shaders.Shader;
@@ -11,10 +10,8 @@ import net.ddns.logick.windows.GLFWWindow;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
 import res.ResourseManager;
 
-import java.awt.*;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -32,7 +29,7 @@ public class MainOpenGL {
     public static int SCR_HEIGHT = 800;
     public static GLFWWindow window;
     private static int a = 1000;
-    public static final int MSAA_LEVEL = 4;
+    public static final int MSAA_LEVEL = 8;
     public static final float GAMMA = 2.2f;
     public static final float EXPOSURE = 1.0f;
 
@@ -44,13 +41,13 @@ public class MainOpenGL {
         window.setCurrient();
         window.setVSync(1);
         window.showWindow();
-//        window.grabMouse();
+        window.grabMouse();
         window.setMousePos(SCR_WIDTH / 2, SCR_HEIGHT / 2);
         window.setMouseCallbacks(input.cursorPosCallback);
         window.setKeyCallbacks(input);
         window.setResizable(false);
         GL.createCapabilities();
-        GLUtil.setupDebugMessageCallback();
+//        GLUtil.setupDebugMessageCallback();
         glEnable(GL_DEPTH_TEST);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
@@ -73,7 +70,7 @@ public class MainOpenGL {
             lightShader.bindMatricesToGlobalPoint("Matrices");
         } catch (Exception e) {
             e.printStackTrace();
-            window.shoulClose();
+            window.shouldClose();
         }
 
         int blockVBO;
@@ -137,12 +134,15 @@ public class MainOpenGL {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        int vao = initVAO1();
-        int vao1 = initVAO1();
-
+//        int vao = initVAO1();
+//        int vao1 = initVAO1();
+        int vao = genFVAO();
         Logger.getGlobal().info("initialised");
         float scale = 1.04f;
+        float angle = 0.1f;
+        Mat4 id = Mat4.MAT4_IDENTITY;
         while (!window.isWindowShouldClose()) {
+            input.processInput(window);
 
             glBindBuffer(GL_UNIFORM_BUFFER, blockVBO);
             glBufferSubData(GL_UNIFORM_BUFFER, Mat4.BYTES, cam.viewMatrix.getBuffer());
@@ -156,12 +156,11 @@ public class MainOpenGL {
             glClearColor(0.11f, 0.11f, 0.11f, 1f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-            diffuseMap.bindTo(GL_TEXTURE0);
+            /*diffuseMap.bindTo(GL_TEXTURE0);
             specularMap.bindTo(GL_TEXTURE1);
 
             Vec3 lightPos = new Vec3(2 * (float) Math.sqrt(1 - Math.cos(glfwGetTime()) * Math.cos(glfwGetTime())) * (float) Math.signum(Math.sin(glfwGetTime())), 0, (float) Math.cos(glfwGetTime()) * 2);
 
-            input.processInput(window);
 
             shader.use();
             try {
@@ -185,7 +184,7 @@ public class MainOpenGL {
                 lightShader.setFloat("material.shininess", 32);
                 lightShader.setModelMatrix(Mat4.MAT4_IDENTITY.translate(new Vec3(0f, 0f, 0f)));
             } catch (Exception e) {
-                window.shoulClose();
+                window.shouldClose();
                 e.printStackTrace();
             }
             glBindVertexArray(vao1);
@@ -200,10 +199,20 @@ public class MainOpenGL {
                 fillingShader.setModelMatrix(new Mat4(scale, scale, scale));
                 fillingShader.setColor("color", new Color(35, 115, 133));
             } catch (Exception e) {
-                window.shoulClose();
+                window.shouldClose();
                 e.printStackTrace();
             }
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawArrays(GL_TRIANGLES, 0, 36);*/
+            shader.use();
+            id = id.rotate(1, 0, 0, angle);
+            try {
+                shader.setModelMatrix(id);
+            } catch (Exception e) {
+                window.shouldClose();
+                e.printStackTrace();
+            }
+            glBindVertexArray(vao);
+            glDrawElements(GL_LINES, (int) (100 * 1 / 0.1f) + 1, GL_UNSIGNED_INT, 0);
 
             glStencilMask(0xFF);
 
@@ -240,7 +249,39 @@ public class MainOpenGL {
         Logger.getGlobal().info("exit");
     }
 
-    private static int initVAO1() {
+    public static int genFVAO() {
+        float a = 1;
+        float b = 1;
+        int j = 0;
+        float step = 0.1f;
+        float[] arr = new float[3 * ((int) (100 * 1 / step) + 1)];
+        for (float i = 0; i < 100; i += step, j++) {
+            arr[j * 3] = i;
+            arr[j * 3 + 1] = (float) (Math.sin(i * a) * b / i);
+            arr[j * 3 + 2] = 0;
+        }
+        int vao = glGenVertexArrays();
+        glBindVertexArray(vao);
+        int vbo = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, arr, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
+        System.out.println(arr.length + " " + arr.length / 3 * 2);
+        int[] ind = new int[arr.length / 3 * 2];
+        for (int i = 0; i < arr.length / 3; ) {
+            ind[2 * i] = i;
+            ind[2 * i + 1] = ++i;
+        }
+        int ibo = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, ind, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        return vao;
+    }
+
+    /*private static int initVAO1() {
         float[] vertices = {
                 // positions          // normals           // texture coords
                 -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
@@ -285,12 +326,12 @@ public class MainOpenGL {
                 -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
                 -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
         };
-        /*float[] arr = new float[a * 3];
+        *//*float[] arr = new float[a * 3];
         for (int i = 0; i < a; i++) {
             arr[3 * i] = i % 10;
             arr[3 * i + 1] = i / 10 % 10;
             arr[3 * i + 2] = i / 100 % 10;
-        }*/
+        }*//*
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
 //        int instVBO = glGenBuffers();
@@ -311,7 +352,7 @@ public class MainOpenGL {
 //        glVertexAttribDivisor(3, 1);
         glBindVertexArray(0);
         return vao;
-    }
+    }*/
 
     public static void initGLFW() {
         GLFWErrorCallback.createPrint(System.err).set();
@@ -319,7 +360,7 @@ public class MainOpenGL {
             throw new IllegalStateException("Unable to initialize GLFW");
     }
 
-    public static int initVao() {
+    /*public static int initVao() {
         float[] vertices = {
                 0.5f, 0.5f, -1.0f, 1.0f, 1.0f,
                 0.5f, -0.5f, -1.0f, 1.0f, 0.0f,
@@ -345,5 +386,5 @@ public class MainOpenGL {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         return vao;
-    }
+    }*/
 }

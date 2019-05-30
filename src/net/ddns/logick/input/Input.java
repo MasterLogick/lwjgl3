@@ -33,7 +33,7 @@ public class Input implements GLFWKeyCallbackI {
 
     public void processInput(GLFWWindow window) {
         if (keys[GLFW_KEY_ESCAPE]) {
-            window.shoulClose();
+            window.shouldClose();
         }
         if (keys[GLFW_KEY_C]) {
             camera.restoreDefaultPos();
